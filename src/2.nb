@@ -1,0 +1,6 @@
+((title . "Logbook B (1926)")
+ (year . 1926)
+ (tags . ("Eros" "jumping"))
+ (date . "2019-03-19"))
+
+Another Page
