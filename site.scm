@@ -9,21 +9,23 @@
 (define-record page type name vars content)
 
 (define (page-source-directory page)
-  (make-pathname "src" (page-type page)))
+  (make-pathname "src" (->string (page-type page))))
 
 (define (page-out-directory page)
-  (make-pathname "out" (page-type page)))
+  (make-pathname "out" (->string (page-type page))))
 
 (define (page-out-path page)
-  (make-pathname "out" (make-pathname (page-type page) (page-name page) "html")))
+  (make-pathname "out" (make-pathname (->string (page-type page)) (page-name page) "html")))
 
 (define (page-url page)
   (make-pathname "/"
-     (make-pathname (page-type page) (page-name page) "html")))
+     (make-pathname (->string (page-type page)) (page-name page) "html")))
 
 ;; Dynamic parameters
 
 (define current-page (make-parameter #f))
+
+(define list-pages (make-parameter '()))
 
 (define prev-page (make-parameter #f))
 
@@ -65,19 +67,19 @@
 
 (define (list-page-url)
   (make-pathname "/"
-   (make-pathname (list-type)
+   (make-pathname (->string  (list-type))
      (make-pathname (conc "_" (list-tag)) (->string (list-page-number))))))
 
 ;; abstract these
 (define (next-list-page-url)
   (make-pathname "/"
-   (make-pathname (list-type)
+   (make-pathname (->string  (list-type))
      (make-pathname (conc "_" (list-tag))
                     (->string (+ (list-page-number) 1))))))
 
 (define (prev-list-page-url)
   (make-pathname "/"
-   (make-pathname (list-type)
+   (make-pathname (->string (list-type))
      (make-pathname (conc "_" (list-tag))
                     (->string (- (list-page-number) 1))))))
 
@@ -85,88 +87,108 @@
   `(span
     (a (@ (href ,(prev-list-page-url)))
        "<<" ,(- (list-page-number) 1))
-    "/" ,(list-total-pages)))
+    "/" ,(->string (list-total-pages))))
   
 (define (next-list-page-link)
   `(a (@ (href ,(next-list-page-url)))
-     ">>" ,(+ (list-page-number) 1)))
+     ">>" ,(->string (+ (list-page-number) 1))))
 
 (define (tag-url tag)
   (make-pathname "/"
-   (make-pathname (page-type (current-page)) tag)))
+   (make-pathname (->string (page-type (current-page))) tag)))
 
 ;; Templates
 
 (define (define-template level type template)
   (put! level type template))
 
-(define (get-template level type template)
-  (get level type template))
+(define (get-template level type)
+  (get level type))
 
-(define base-template 
-  (make-parameter
-   (lambda (content)
+(define-template '/ 'base
+   (lambda ()
      `((xhtml-1.0-strict)
        (html
         (head
          (title ,($ 'title))
          (link (@ (rel "stylesheet") (type "text/css")
                   (href "site.css"))))
-        (body ,content))))))
+        (body ,(page))))))
 
-(define page-template
-  (make-parameter
-   (lambda (content)
-     `(div
-       (div
-        (h1 ,($ 'title)))
-       ,content))))
+(define (base)
+  (let ((type (or (list-type) (page-type (current-page)))))
+    ((or (get-template type 'base) (get-template '/ 'base)))))
+
+(define-template '/ 'page
+  (lambda ()
+    `(div
+      (div
+       (h1 ,($ 'title)))
+      ,(content))))
+
+(define (page)
+  (let ((type (or (list-type) (page-type (current-page)))))
+    ((or (get-template type 'page)  (get-template '/ 'page)))))
   
-(define index-template
-  (make-parameter
-   (lambda (content)
-     `(div
-       (div
-        (h1 ,($ 'title)))
-       ,($ 'content)))))
+(define-template '/ '_index
+  (lambda ()
+    `(div
+      (div
+       (h1 "Index")
+       (h1 ,($ 'title)))
+      ,($ 'content)
+      ,((content-template)))))
         
-(define page-content-template
-  (make-parameter
+(define content-template
    (lambda ()
      `(div
-        (p ,($content))))))
+        (p ,($content)))))
 
-(define post-content-template
-  (make-parameter
-   (lambda ()
-     `(div
-        (p ,($content))))))
+(define (content)
+  (if (list-type)
+      (let ((type (list-type)))
+        ((or (get-template type 'list) (get-template '/ 'list))))
+      (let ((type (page-type (current-page))))
+        ((or (get-template type 'content) content-template)))))
 
-(define list-template
-  (make-parameter
-   (lambda (content)
-     `(div
-       (div
-        (h1 ,($ 'title))
-        (h2 ,(list-page-url)))
-       (ul ,content)
-       ,(prev-list-page-link)
-       ,(next-list-page-link)
-       ))))       
+(define-template 'post 'content
+  (lambda ()
+    `(div
+      (p ,($content)))))
 
-(define list-item-template 
-  (make-parameter
-   (lambda ()
-     `(li (a (@ (href ,(url)))
-             ,($ 'title))))))
+(define-template '/ 'list
+  (lambda ()
+    `(div
+      (div
+       (h1 ,($ 'title))
+       (h2 ,(list-page-url)))
+      (ul ,(map-list-template))
+      ,(prev-list-page-link)
+      ,(next-list-page-link)
+      )))
+
+(define (map-list-template)
+  (map (lambda (page)
+         (parameterize ((current-page page))
+          (list-item)))
+       (list-pages)))
+
+(define list-item-template
+  (lambda ()
+    `(li (a (@ (href ,(url)))
+            ,($ 'title)))));)
+
+(define (list-item)
+  (let* ((type (list-type)))
+    ((or (get-template type 'list-item) list-item-template))))
 
 ;; File loading
 
-(define (load-page dir path)
+(define (load-page type path)
   (with-input-from-file path
     (lambda ()
       (let-values (((_ name ext) (decompose-pathname path)))
-      (make-page dir name (read) (read-string))))))
+        (make-page type name (read) (read-string))))))
 
 ;; Needs real date parsing and handling
 (define (date>? a b)
@@ -178,42 +200,40 @@
 (define page-sorter
   (make-parameter date>?))
 
-(define (load-pages dir)
-  (sort (map (lambda (path) (load-page dir path))
-             (glob (conc "./src/" dir "*.nb")))
+(define (load-files dir)
+  (sort (map (lambda (path) (load-page (string->symbol dir) path))
+             (glob (conc "./src/" dir "/*.nb")))
         (page-sorter)))
 
 ;; Load
 
-(include "templates.scm")
+ (include "templates.scm")
                
-(define (load-pages-or-posts dir pages #!optional (template page-content-template))
-  (when (not (directory-exists? (conc "out/" dir)))
-        (create-directory (conc "out/" dir)))
+(define (load-pages type pages)
   
+  (when (not (directory-exists? (conc "out/" type))) ; abstract this
+        (create-directory (conc "out/" type)))
+
   (do ((pages pages (cdr pages))
        (rev-pages '() (cons (car pages) rev-pages)))
       ((null? pages))
     (let ((page (car pages)))
-      (parameterize ((current-page page)
-                     (prev-page (and (not (null? (cdr pages)))
-                                     (cadr pages)))
-                     (next-page (and (not (null? rev-pages))
-                                     (car rev-pages))))
+    (parameterize ((current-page page)
+                     (prev-page (and (not (null? (cdr pages))) (cadr pages)))
+                     (next-page (and (not (null? rev-pages)) (car rev-pages))))
         (with-output-to-file (page-out-path page)
           (lambda ()
             (print
              (serialize-sxml 
-              ((base-template)
-               ((page-template) 
-                ((template))))))))))))
-
+              (base)))))))))
+  
 (define (load-lists dir pages)
-  (let ((tags (extract-tags pages)))
+  (let ((tags (extract-tags pages))
+        (type (string->symbol dir)))
     (do ((tags tags (cdr tags)))
         ((null? tags))
       (let* ((tag (car tags))
-             (file-dir (make-pathname (make-pathname "out/" dir) (conc "_" tag))) ;; abstract this
+             (file-dir (make-pathname (make-pathname "out" dir) (conc "_" tag))) ;; abstract this
              (page-set '())
              (pages (filter-tag tag pages))
              (total-pages (length pages)))
@@ -221,9 +241,9 @@
                   (pages pages)
                   (page-set '()))
           (cond ((null? pages) 
-                 (run-list dir tag file-dir p (reverse page-set) total-pages))
+                 (run-list type tag file-dir p (reverse page-set) total-pages))
                 ((= n (page-size))
-                 (run-list dir tag file-dir p (reverse page-set) total-pages)
+                 (run-list type tag file-dir p (reverse page-set) total-pages)
                  (rec 0 (+ p 1) pages '()))
                 (else (rec (+ n 1) p (cdr pages) 
                            (cons (car pages) page-set)))))))))
@@ -242,38 +262,32 @@
                  (list-page-number p)
                  (list-total-pages total-pages)
                  (list-tag tag)
-                 (list-type type))
+                 (list-type type) 
+                 (list-pages page-set))
    (when (not (directory-exists? dir))
          (create-directory dir))
-   (with-output-to-file
-       (make-pathname dir (->string p) "html")
+   (with-output-to-file (make-pathname dir (->string p) "html")
      (lambda ()
        (print
         (serialize-sxml
-         ((base-template) 
-          ((page-template)
-           ((list-template) 
-            (map (lambda (page)
-                   (parameterize ((current-page page))
-                     ((list-item-template))))
-                 page-set))))))))))
+         (base)))))  ))
 
-(define pages (load-pages ""))
+(define pages (load-files ""))
 
-(define posts (load-pages "posts/"))
+(define posts (load-files "posts"))
 
 (with-output-to-file (make-pathname "out" "index" "html")
   (lambda ()
     (print 
      (serialize-sxml
-      (parameterize ((current-page (load-page "/" "src/_index.site")))
-       ((base-template)
-        ((index-template))))))))
+      (parameterize ((current-page (load-page '_index "src/_index.site"))
+                     (list-pages pages))
+       (base))))))
 
-(load-pages-or-posts "" pages page-content-template)
+(load-pages "/" pages)
 
-(load-pages-or-posts "posts/" posts post-content-template)
+(load-pages "posts" posts)
 
-(load-lists "posts/" posts)
+(load-lists "posts" posts)
 
 (quit)
