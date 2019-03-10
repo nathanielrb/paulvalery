@@ -4,7 +4,22 @@
 
 (define page-size (make-parameter 3))
 
+;; Pages
+
 (define-record page type name vars content)
+
+(define (page-source-directory page)
+  (make-pathname "src" (page-type page)))
+
+(define (page-out-directory page)
+  (make-pathname "out" (page-type page)))
+
+(define (page-out-path page)
+  (make-pathname "out" (make-pathname (page-type page) (page-name page) "html")))
+
+(define (page-url page)
+  (make-pathname "/"
+     (make-pathname (page-type page) (page-name page) "html")))
 
 ;; Dynamic parameters
 
@@ -32,6 +47,10 @@
 
 ;; Links
 
+(define (url #!optional page)
+  (let ((page (or page (current-page))))
+    (page-url page)))
+
 (define (prev-page-link)
   (let ((page (prev-page)))
     (if page
@@ -44,24 +63,32 @@
         `(a (@ (href ,(url page))) ,($ 'title page))
         "")))
 
-(define (url #!optional page)
-  (let ((page (or page (current-page))))
-    (make-pathname "/"
-     (make-pathname (page-type page) (page-name page) "html"))))
-
 (define (list-page-url)
   (make-pathname "/"
    (make-pathname (list-type)
      (make-pathname (conc "_" (list-tag)) (->string (list-page-number))))))
 
+;; abstract these
+(define (next-list-page-url)
+  (make-pathname "/"
+   (make-pathname (list-type)
+     (make-pathname (conc "_" (list-tag))
+                    (->string (+ (list-page-number) 1))))))
+
+(define (prev-list-page-url)
+  (make-pathname "/"
+   (make-pathname (list-type)
+     (make-pathname (conc "_" (list-tag))
+                    (->string (- (list-page-number) 1))))))
+
 (define (prev-list-page-link)
   `(span
-    (a (@ (href ,(list-page-number)))
+    (a (@ (href ,(prev-list-page-url)))
        "<<" ,(- (list-page-number) 1))
     "/" ,(list-total-pages)))
   
 (define (next-list-page-link)
-  `(a (@ (href ,(list-page-number)))
+  `(a (@ (href ,(next-list-page-url)))
      ">>" ,(+ (list-page-number) 1)))
 
 (define (tag-url tag)
@@ -69,6 +96,12 @@
    (make-pathname (page-type (current-page)) tag)))
 
 ;; Templates
+
+(define (define-template level type template)
+  (put! level type template))
+
+(define (get-template level type template)
+  (get level type template))
 
 (define base-template 
   (make-parameter
@@ -129,10 +162,6 @@
 
 ;; File loading
 
-(define (file-path page)
-  (make-pathname (make-pathname "out" (page-type page))
-                 (page-name page) "html"))
-
 (define (load-page dir path)
   (with-input-from-file path
     (lambda ()
@@ -171,7 +200,7 @@
                                      (cadr pages)))
                      (next-page (and (not (null? rev-pages))
                                      (car rev-pages))))
-        (with-output-to-file (file-path page)
+        (with-output-to-file (page-out-path page)
           (lambda ()
             (print
              (serialize-sxml 
