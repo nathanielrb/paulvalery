@@ -90,21 +90,25 @@
                     (print "\n**FILE: " (file-path page) "**\n")
                     (print
                      (serialize-sxml
-        (render-single-page))))))
+                      (render-single-page))))))
 
   ;; Tags List
   (let ((tags (delete-duplicates
                (apply append
                       (map (cut $ 'tags <>) pages)))))
-    (do ((tags tags (cdr tags)))
+    (do ((n 0 (+ n 1))
+         (tags tags (cdr tags)))
         ((null? tags))
       (let ((tag (car tags)))
-      (parameterize ((current-page (make-page tag
-                                              `((title . ,tag))
-                                              "none")))
-                    (print (serialize-sxml (render-list-page
-                                            (filter (lambda (page) (member tag ($ 'tags page)))
-                                                    pages))))))))
+        (parameterize ((current-page (make-page tag
+                                                `((title . ,tag))
+                                                "none")))
+                      (print
+                       (serialize-sxml
+                        (render-list-page
+                         (filter (lambda (page)
+                                   (member tag ($ 'tags page)))
+                                 pages))))))))
   )
-  
+
 
