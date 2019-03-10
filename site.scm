@@ -4,11 +4,15 @@
 
 (define page-size (make-parameter 3))
 
-(define types (make-parameter '("notebook")))
-
 (define-record page type name vars content)
 
+;; Dynamic parameters
+
 (define current-page (make-parameter #f))
+
+(define prev-page (make-parameter #f))
+
+(define next-page (make-parameter #f))
 
 (define ($content #!optional page)
   (let ((page (or page (current-page))))
@@ -18,27 +22,53 @@
   (let ((page (or page (current-page))))
     (or (alist-ref var (page-vars page)) "")))
 
-(define prev-pages (make-parameter #f))
+(define list-type (make-parameter #f))
 
-(define next-pages (make-parameter #f))
+(define list-tag (make-parameter #f))
 
-(define page-number (make-parameter #f))
+(define list-page-number (make-parameter #f))
 
-;; Templates
+(define list-total-pages (make-parameter #f))
+
+;; Links
 
 (define (prev-page-link)
-  (if (null? (prev-pages)) ""
-  (let ((page (car (prev-pages))))
-   `(a (@ (href ,(url page))) ,($ 'title page)))))
+  (let ((page (prev-page)))
+    (if page
+        `(a (@ (href ,(url page))) ,($ 'title page))
+        "")))
 
 (define (next-page-link)
-  (if (null? (next-pages)) ""
-      (let ((page (car (next-pages))))
-        `(a (@ (href ,(url page))) ,($ 'title page)))))
+  (let ((page (next-page)))
+    (if page
+        `(a (@ (href ,(url page))) ,($ 'title page))
+        "")))
 
 (define (url #!optional page)
   (let ((page (or page (current-page))))
-    (make-pathname (page-type page) (page-name page) "html")))
+    (make-pathname "/"
+     (make-pathname (page-type page) (page-name page) "html"))))
+
+(define (list-page-url)
+  (make-pathname "/"
+   (make-pathname (list-type)
+     (make-pathname (conc "_" (list-tag)) (->string (list-page-number))))))
+
+(define (prev-list-page-link)
+  `(span
+    (a (@ (href ,(list-page-number)))
+       "<<" ,(- (list-page-number) 1))
+    "/" ,(list-total-pages)))
+  
+(define (next-list-page-link)
+  `(a (@ (href ,(list-page-number)))
+     ">>" ,(+ (list-page-number) 1)))
+
+(define (tag-url tag)
+  (make-pathname "/"
+   (make-pathname (page-type (current-page)) tag)))
+
+;; Templates
 
 (define base-template 
   (make-parameter
@@ -58,6 +88,14 @@
        (div
         (h1 ,($ 'title)))
        ,content))))
+  
+(define index-template
+  (make-parameter
+   (lambda (content)
+     `(div
+       (div
+        (h1 ,($ 'title)))
+       ,($ 'content)))))
         
 (define page-content-template
   (make-parameter
@@ -65,26 +103,19 @@
      `(div
         (p ,($content))))))
 
-(define post-template
-  (make-parameter
-   (lambda (content)
-     `(div
-       (div
-        (h1 ,($ 'title)))
-       ,content))))
-        
 (define post-content-template
   (make-parameter
    (lambda ()
      `(div
         (p ,($content))))))
 
-(define list-page-template
+(define list-template
   (make-parameter
    (lambda (content)
      `(div
        (div
-        (h1 ,($ 'title)))
+        (h1 ,($ 'title))
+        (h2 ,(list-page-url)))
        (ul ,content)
        ,(prev-list-page-link)
        ,(next-list-page-link)
@@ -96,24 +127,11 @@
      `(li (a (@ (href ,(url)))
              ,($ 'title))))))
 
-(define (render-list-page pages)
-  ((base-template) 
-   ((page-template)
-    ((list-page-template) 
-     (render-list-items pages)))))
-
-(define (render-list-items pages)
-  (map (lambda (page)
-           (parameterize ((current-page page))
-            ((list-item-template))))
-         pages))
-
 ;; File loading
 
 (define (file-path page)
-  (let ((page (or page (current-page))))
-    (make-pathname (make-pathname "out" (page-type page))
-                   (page-name page) "html")))
+  (make-pathname (make-pathname "out" (page-type page))
+                 (page-name page) "html"))
 
 (define (load-page dir path)
   (with-input-from-file path
@@ -125,7 +143,6 @@
 (define (date>? a b)
   (let ((date-a (alist-ref 'date (page-vars a)))
         (date-b (alist-ref 'date (page-vars b))))
-    (print "Sorting on " date-a " >? " date-b)
     (and date-a date-b
          (string>? date-a date-b))))
 
@@ -133,7 +150,6 @@
   (make-parameter date>?))
 
 (define (load-pages dir)
-  (print "Doing " (glob (conc "./src/" dir "*.nb")))
   (sort (map (lambda (path) (load-page dir path))
              (glob (conc "./src/" dir "*.nb")))
         (page-sorter)))
@@ -141,84 +157,63 @@
 ;; Load
 
 (include "templates.scm")
-
-(define (load-directory dir #!optional
-                        (page-content-template page-content-template)
-                        (lists? #t))
+               
+(define (load-pages-or-posts dir pages #!optional (template page-content-template))
   (when (not (directory-exists? (conc "out/" dir)))
         (create-directory (conc "out/" dir)))
-
-  (let ((pages (load-pages dir)))
-    ;; Index - needs to be generalized to template(s)
-    (parameterize ((current-page (car pages))
-                   (next-pages '())
-                   (prev-pages (cdr pages)))
-                  (with-output-to-file (conc "out/" dir "index.html")
-                    (lambda ()
-                      (print
-                       (serialize-sxml
-                        ((base-template)
-                         ((page-template) 
-                          ((page-content-template)))))))))
-
-    ;; All Pages
-    (do ((n 0 (+ n 1))
-         (pages pages (cdr pages))
-         (rev-pages '() (cons (car pages) rev-pages)))
-        ((null? pages))
-      (let ((page (car pages)))
-        (parameterize ((current-page page)
-                       (prev-pages (cdr pages))
-                       (next-pages rev-pages))
-                      (with-output-to-file (file-path page)
-                        (lambda ()
-                          (print
-                           (serialize-sxml
-                            ((base-template)
-                             ((page-template)
-                              ((page-content-template)))))))))))
-
-    ;; Tags List
-    (when lists?
-          (let ((tags (delete-duplicates
-                       (apply append (map (cut $ 'tags <>) pages)))))
-            (do ((tags tags (cdr tags)))
-                ((null? tags))
-              (let* ((tag (car tags))
-                     (dir (make-pathname (make-pathname "out/" dir) tag))
-                     (page-set '())
-                     (pages (filter (lambda (page)
-                                      (member tag ($ 'tags page)))
-                                    pages))
-                     (total-pages-n (length pages)))
-                (let rec ((n 0)
-                          (p 1)
-                          (pages pages)
-                          (page-set '()))
-                  (cond ((null? pages) 
-                         (run-list tag dir p (reverse page-set) total-pages-n))
-                        ((= n (page-size))
-                         (run-list tag dir p (reverse page-set) total-pages-n)
-                         (rec 0 (+ p 1) pages '()))
-                        (else (rec (+ n 1) p (cdr pages) 
-                                   (cons (car pages) page-set)))))))))))
-
-(define (prev-list-page-link)
-  `(span
-    (a (@ (href ,(page-number)))
-       "<<" ,(- (page-number) 1))
-    "/" ,(total-pages)))
   
-(define total-pages (make-parameter #f))
+  (do ((pages pages (cdr pages))
+       (rev-pages '() (cons (car pages) rev-pages)))
+      ((null? pages))
+    (let ((page (car pages)))
+      (parameterize ((current-page page)
+                     (prev-page (and (not (null? (cdr pages)))
+                                     (cadr pages)))
+                     (next-page (and (not (null? rev-pages))
+                                     (car rev-pages))))
+        (with-output-to-file (file-path page)
+          (lambda ()
+            (print
+             (serialize-sxml 
+              ((base-template)
+               ((page-template) 
+                ((template))))))))))))
 
-(define (next-list-page-link)
-  `(a (@ (href ,(page-number)))
-     ">>" ,(+ (page-number) 1)))
+(define (load-lists dir pages)
+  (let ((tags (extract-tags pages)))
+    (do ((tags tags (cdr tags)))
+        ((null? tags))
+      (let* ((tag (car tags))
+             (file-dir (make-pathname (make-pathname "out/" dir) (conc "_" tag))) ;; abstract this
+             (page-set '())
+             (pages (filter-tag tag pages))
+             (total-pages (length pages)))
+        (let rec ((n 0) (p 1)
+                  (pages pages)
+                  (page-set '()))
+          (cond ((null? pages) 
+                 (run-list dir tag file-dir p (reverse page-set) total-pages))
+                ((= n (page-size))
+                 (run-list dir tag file-dir p (reverse page-set) total-pages)
+                 (rec 0 (+ p 1) pages '()))
+                (else (rec (+ n 1) p (cdr pages) 
+                           (cons (car pages) page-set)))))))))
 
-(define (run-list tag dir p page-set total-pages-n)
+(define (extract-tags pages)
+  (delete-duplicates
+   (apply append (map (cut $ 'tags <>) pages))))
+
+(define (filter-tag tag pages)
+  (filter (lambda (page)
+            (member tag ($ 'tags page)))
+          pages))
+
+(define (run-list type tag dir p page-set total-pages)
   (parameterize ((current-page (make-page #f tag `((title . ,tag)) "none"))
-                 (page-number p)
-                 (total-pages total-pages-n))
+                 (list-page-number p)
+                 (list-total-pages total-pages)
+                 (list-tag tag)
+                 (list-type type))
    (when (not (directory-exists? dir))
          (create-directory dir))
    (with-output-to-file
@@ -226,10 +221,30 @@
      (lambda ()
        (print
         (serialize-sxml
-         (render-list-page page-set)))))))
+         ((base-template) 
+          ((page-template)
+           ((list-template) 
+            (map (lambda (page)
+                   (parameterize ((current-page page))
+                     ((list-item-template))))
+                 page-set))))))))))
 
-(load-directory "" page-content-template #f)
+(define pages (load-pages ""))
 
-(load-directory "posts/"  post-content-template #t)
+(define posts (load-pages "posts/"))
+
+(with-output-to-file (make-pathname "out" "index" "html")
+  (lambda ()
+    (print 
+     (serialize-sxml
+      (parameterize ((current-page (load-page "/" "src/_index.site")))
+       ((base-template)
+        ((index-template))))))))
+
+(load-pages-or-posts "" pages page-content-template)
+
+(load-pages-or-posts "posts/" posts post-content-template)
+
+(load-lists "posts/" posts)
 
 (quit)
