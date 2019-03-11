@@ -177,16 +177,20 @@
 
 ;; Links
 
-(define (prev-document-link)
-  (let ((page (prev-document)))
+(define (prev-document-link #!optional text)
+  (let ((page (prev-document))
+        (text (or text ($ 'title page))))
     (if page
-        `(a (@ (href ,(document-path page))) ,($ 'title page))
+        `(a (@ (href ,(document-path page))) 
+            ,text)
         "")))
 
-(define (next-document-link)
-  (let ((page (next-document)))
+(define (next-document-link #!optional text)
+  (let ((page (next-document))
+        (text (or text ($ 'title page))))
     (if page
-        `(a (@ (href ,(document-path page))) ,($ 'title page))
+        `(a (@ (href ,(document-path page))) 
+            ,text)
         "")))
 
 (define (prev-list-page-link #!optional (text "<"))
@@ -281,7 +285,7 @@
         (head
          (title ,(page-title))
          (link (@ (rel "stylesheet") (type "text/css")
-                  (href "site.css"))))
+                  (href ,(make-pathname (base-path) "static/site" "css")))))
         (body ,(page))))))
 
 (define-template '/ 'page
@@ -313,8 +317,7 @@
   (lambda ()
     `(div
       (div
-       (h1 ,($ 'title))
-       (h2 ,(list-page-path)))
+       (h1 ,($ 'title)))
       (ul ,(list-items))
       ,(prev-list-page-link)
       " " ,(list-page-number) / ,(list-total-pages) " "

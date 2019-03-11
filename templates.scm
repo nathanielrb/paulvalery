@@ -11,8 +11,9 @@
    `(div
      (div
       (h1 "The notebooks of" (br) "Paul Valery"))
+     (ul (@ (class "nav"))
+         ,(list-items-by-type '/))
      ,(content)
-     (ul ,(list-items-by-type '/))
      (h2 (small "Coming soon:") "The Idea of Perfection")
      (p (@ (class "copyright"))
         "Translations Copyright 2019 Nathaniel RB"))))
@@ -31,18 +32,14 @@
 (define-template 'posts 'content
  (lambda ()
    `(div (@ (class "columns"))
-         (p "POSTS")
          (div (@ (class "column left"))
               (ul (@ (class "nav"))
                   ,(if (prev-document)
-                       `(li "<< " ,(prev-document-link))
+                       `(li ,(prev-document-link "<"))
                        "")
                   ,(if (next-document) 
-                       `(li ">> " ,(next-document-link))
-                       "")
-                  (li (@ (class "facebook"))
-                      "FB: "
-                      ,(path))))
+                       `(li ,(next-document-link ">"))
+                       "")))
          (div (@ (class "column right"))
               (p  ,($content))
               (h3 -- ,($ 'title))
