@@ -2,7 +2,7 @@
   `(ul (@ (class "tags"))
        ,@(map (lambda (tag)
                 `(li (@ (class "tag"))
-                     (a (@ (href ,(tag-url tag)))
+                     (a (@ (href ,(type-tag-list-path (type) tag)))
                         ,tag)))
               ($ 'tags))))
 
@@ -42,7 +42,7 @@
                        "")
                   (li (@ (class "facebook"))
                       "FB: "
-                      ,(url))))
+                      ,(path))))
          (div (@ (class "column right"))
               (p  ,($content))
               (h3 -- ,($ 'title))
@@ -50,7 +50,7 @@
 
 (define-template 'post 'list-item
    (lambda ()
-     `(li (a (@ (href ,(url)))
+     `(li (a (@ (href ,(path)))
              ,($ 'first-line))
           " " (small ,($ 'title)))))
 

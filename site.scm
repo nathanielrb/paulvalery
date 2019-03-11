@@ -1,65 +1,144 @@
 (use sxml-serializer posix srfi-1)
 
-(define src-directory (make-parameter "src"))
+(define source-directory (make-parameter "src"))
+
+(define settings-path (make-parameter "site.nb"))
+
+(define out-directory (make-parameter "out"))
 
 (define templates-file (make-parameter "templates.scm"))
 
 (define page-size (make-parameter 3))
 
+(define html-extension? (make-parameter #t))
+
+(define local-paths? (make-parameter #t))
+
 ;; Pages
 
 (define-record page type name vars content)
 
+;; File Paths
+
 (define (page-source-directory page)
-  (make-pathname "src" (->string (page-type page))))
+  (make-pathname (source-directory)
+                 (->string (page-type page))))
 
 (define (type-source-directory type)
   (let ((dir (if (eq? type '/) "." (->string type))))
-    (make-pathname (make-pathname "src" dir) "*.nb")))
+    (make-pathname (source-directory) dir)))
 
 (define (page-out-directory page)
-  (make-pathname "out" (->string (page-type page))))
+  (make-pathname (out-directory) 
+                 (->string (page-type page))))
+
+(define (page-filename page)
+  (make-pathname "" (page-name page) "html"))
+
+(define (page-out-path page)
+  (make-pathname (page-out-directory page) 
+                 (page-filename page)))
 
 (define (type-out-directory type)
   (let ((dir (if (eq? type '/) "." (->string type))))
-    (make-pathname "out" dir)))
+    (make-pathname (out-directory) dir)))
+
+(define (type-list-out-directory type)
+  (make-pathname (type-out-directory type) "_list"))
+
+(define (type-list-filename type p)
+  (make-pathname "" (->string p) "html"))
+
+(define (type-list-out-path type p)
+  (make-pathname (type-list-out-directory type)
+                 (type-list-filename p)))
 
 (define (type-tag-list-out-directory type tag)
-  (let ((dir (if (eq? type '/) "." (->string type))))
-    (make-pathname (make-pathname "out" dir)
-                   (conc "_" tag))))
+  (make-pathname (type-out-directory type) (conc "_" tag)))
 
-;; fix this
-(define (type-tag-list-path type tag)
-  (let ((dir (if (eq? type '/) "." (->string type))))
-    (make-pathname (make-pathname "out" dir)
-                   (conc "_" tag))))
+(define (type-tag-list-out-path type tag p)
+  (make-pathname (type-tag-list-out-directory type)
+                   (type-list-filename p)))
 
-(define (page-out-path page)
-  (make-pathname "out" 
-   (make-pathname (->string (page-type page))
-                  (page-name page) "html")))
+;; URL Paths
 
-(define (list-page-out-directory type)
-  (make-pathname "out" (make-pathname (->string type) "list")))
+(define (number-of-pages n)
+  (ceiling (/ n (page-size))))
 
-(define (list-page-out-path type p)
-  (make-pathname "out" (make-pathname (->string type) "list")
-                 (->string p) "html"))
+(define (html-extension)
+  (if (html-extension?) "html" ""))
 
-(define (list-page-filename p)
-  (conc (->string p) ".html"))
+;; Buggy ... need to keep better track of place in hierarchy
+(define (base-path)
+  (if (local-paths?)
+      (if (current-page)
+          (if (equal? (type) '/')
+              "."
+              (if (list-tag)
+                  "../../"
+                  "..")))
+    "/"))
 
-(define (page-url page)
-  (make-pathname "/"
+(define (page-path page)
+  (make-pathname (base-path)
    (make-pathname (->string (page-type page)) 
-                  (page-name page) "html")))
+                  (page-name page) 
+                  (html-extension))))
+
+(define (type-path type)
+  (make-pathname (base-path) (->string type)))
+
+(define (index-path type)
+  (make-pathname (type-path type) 
+                 "index" 
+                 (html-extension)))
+
+(define (type-list-path type #!optional page-number)
+  (make-pathname (type-path type)
+   (make-pathname "_list"
+                  (if page-number (->string page-number) "1")
+                  (html-extension))))
+
+(define (type-tag-list-path type tag #!optional page-number)
+  (make-pathname (type-path type)
+    (make-pathname (conc "_" tag)
+                   (if page-number (->string page-number) "1")
+                   (html-extension))))
+
+(define (list-page-path)
+  (let ((tag (list-tag)))
+    (if tag
+        (type-tag-list-path (list-type) (list-tag) (list-page-number))
+        (type-list-path (list-type) (list-page-number)))))
+
+(define (next-list-page-path)
+  (let ((tag (list-tag))
+        (page-number (+ (list-page-number) 1)))
+    (and (<= page-number (list-total-pages))
+        (if tag
+            (type-tag-list-path (list-type) (list-tag) page-number)
+            (type-list-path (list-type) page-number)))))        
+
+(define (prev-list-page-path)
+  (let ((tag (list-tag))
+        (page-number (- (list-page-number) 1)))
+    (and (> page-number 0)
+         (if tag
+             (type-tag-list-path (list-type) (list-tag) page-number)
+             (type-list-path (list-type) page-number)))))
 
 ;; Dynamic parameters
 
 (define index? (make-parameter #f))
 
 (define current-page (make-parameter #f))
+
+(define (path)
+  (cond ((index?) (index-path (list-type)))
+        ((current-page) (page-path (current-page)))
+        (else
+         (type-tag-list-path (list-type) (list-tag) (list-page-number))
+         (type-list-path (list-type) (list-page-number)))))
 
 (define list-pages (make-parameter '()))
 
@@ -83,7 +162,7 @@
 
 (define ($ var #!optional page)
   (let ((page (or page (current-page))))
-    (or (alist-ref var (page-vars page)) "")))
+    (alist-ref var (page-vars page))))
 
 (define list-type (make-parameter #f))
 
@@ -93,55 +172,38 @@
 
 (define list-total-pages (make-parameter #f))
 
+(define (type)
+  (if (current-page)
+      (page-type (current-page))
+      (list-type)))
+
 ;; Links
-
-(define (url #!optional page)
-  (let ((page (or page (current-page))))
-    (page-url page)))
-
-(define (list-page-url)
-  (make-pathname "/"
-   (make-pathname (->string  (list-type))
-     (make-pathname (conc "_" (list-tag)) (->string (list-page-number))))))
-
-;; abstract these
-(define (next-list-page-url)
-  (make-pathname "/"
-   (make-pathname (->string  (list-type))
-     (make-pathname (conc "_" (list-tag))
-                    (->string (+ (list-page-number) 1))))))
-
-(define (prev-list-page-url)
-  (make-pathname "/"
-   (make-pathname (->string (list-type))
-     (make-pathname (conc "_" (list-tag))
-                    (->string (- (list-page-number) 1))))))
 
 (define (prev-page-link)
   (let ((page (prev-page)))
     (if page
-        `(a (@ (href ,(url page))) ,($ 'title page))
+        `(a (@ (href ,(page-path page))) ,($ 'title page))
         "")))
 
 (define (next-page-link)
   (let ((page (next-page)))
     (if page
-        `(a (@ (href ,(url page))) ,($ 'title page))
+        `(a (@ (href ,(page-path page))) ,($ 'title page))
         "")))
 
 (define (prev-list-page-link)
-  `(span
-    (a (@ (href ,(prev-list-page-url)))
-       "<<" ,(- (list-page-number) 1))
-    "/" ,(->string (list-total-pages))))
+  (let ((path (prev-list-page-path)))
+    (if path
+        `(a (@ (href ,path))
+            "<<" ,(- (list-page-number) 1))
+        "")))
   
 (define (next-list-page-link)
-  `(a (@ (href ,(next-list-page-url)))
-     ">>" ,(->string (+ (list-page-number) 1))))
-
-(define (tag-url tag)
-  (make-pathname "/"
-   (make-pathname (->string (page-type (current-page))) tag)))
+  (let ((path (next-list-page-path)))
+    (if path
+        `(a (@ (href ,path))
+            ">>" ,(->string (+ (list-page-number) 1)))
+        "")))
 
 ;; Templating
 
@@ -185,7 +247,7 @@
 (define (list-items-by-type type)
   (let ((docs (documents type)))
     (parameterize ((list-page-number 1)
-                   (list-total-pages (length docs))
+                   (list-total-pages (number-of-pages (length docs)))
                    (list-type type))
    (map (lambda (page)
           (parameterize ((current-page page))
@@ -238,7 +300,7 @@
     `(div
       (div
        (h1 ,($ 'title))
-       (h2 ,(list-page-url)))
+       (h2 ,(list-page-path)))
       (ul ,(list-items))
       ,(prev-list-page-link)
       ,(next-list-page-link)
@@ -246,7 +308,7 @@
 
 (define-template '/ 'list-item
   (lambda ()
-    `(li (a (@ (href ,(url)))
+    `(li (a (@ (href ,(path)))
             ,($ 'title)))))
 
 
@@ -270,7 +332,8 @@
 
 (define (load-files type)
   (sort (map (lambda (path) (load-page type path))
-             (glob (type-source-directory type)))
+             (glob (make-pathname (type-source-directory type)
+                                  "*" "nb")))
         (page-sorter)))
 
 ;; Load
@@ -297,9 +360,23 @@
               (base))))))))))
   
 
+(define (render-index type)
+  (let ((index-page (load-page '_index (make-pathname (type-source-directory type) "_index.site"))))
+    (with-output-to-file (make-pathname (type-out-directory type) "index" "html")
+      (lambda ()
+        (print 
+         (serialize-sxml
+          (parameterize ((current-page index-page)                      
+                         (list-pages (documents type))
+                         (list-page-number 1)
+                         (list-total-pages (number-of-pages (length (documents type))))
+                         (list-type type)
+                         (index? #t))
+                        (base))))))))
+
 (define (extract-tags pages)
   (delete-duplicates
-   (apply append (map (cut $ 'tags <>) pages))))
+   (apply append  (filter values (map (cut $ 'tags <>) pages)))))
 
 (define (filter-tag tag pages)
   (filter (lambda (page)
@@ -308,7 +385,7 @@
 
 (define (render-lists type )
   (parameterize ((current-page (make-page type (->string type) `((title . ,type)) "none")))
-   (paginate-list type (documents type) (list-page-out-directory type))))
+   (paginate-list type (documents type) (type-list-out-directory type))))
   
 (define (render-tags-lists type)
   (let* ((pages (documents type))
@@ -340,14 +417,12 @@
             (else (rec (+ n 1) p (cdr pages) 
                        (cons (car pages) page-set)))))))
                
-(define (render-list-page type dir p page-set total-pages)
-  (print "type " type ", page " p "/" total-pages ", dir " dir ": " page-set)
+(define (render-list-page type out-directory p page-set total-pages)
   (parameterize ((list-page-number p)
-                 (list-total-pages total-pages)
+                 (list-total-pages (number-of-pages total-pages))
                  (list-type type) 
                  (list-pages page-set))
- (print "here")
-   (with-output-to-file (make-pathname dir (list-page-filename p))
+   (with-output-to-file (make-pathname out-directory (type-list-filename type p))
      (lambda ()
        (print
         (serialize-sxml (base)))))  ))
@@ -358,28 +433,21 @@
 (define (documents type)
   (get type '_documents))
 
-(save-documents '/ (load-files '/))
+(define settings (with-input-from-file (settings-path) read))
 
-(save-documents 'posts (load-files 'posts))
+(define types (alist-ref 'types settings))
 
-(with-output-to-file (make-pathname "out" "index" "html")
-  (lambda ()
-    (print 
-     (serialize-sxml
-      (parameterize ((current-page (load-page '_index "src/_index.site"))
-                     (list-pages (documents '/))
-                     (list-page-number 1)
-                     (list-total-pages (length (documents '/)))
-                     (list-type '/)
-                     (index? #t))
-       (base))))))
+(map (lambda (type)
+       (save-documents type (load-files type)))
+  
+     types)
 
-(render-pages '/)
+(map (lambda (type)
+       (render-pages type)
+       (render-index type)
+       (render-lists type)
+       (render-tags-lists type))
+     types)
 
-(render-pages 'posts)
-
-(render-tags-lists 'posts)
-
-(render-lists 'posts)
-
+;; (render-index 'posts)
 (quit)
