@@ -68,8 +68,8 @@
 
 ;; URL Paths
 
-(define (number-of-documents n)
-  (ceiling (/ n (list-page-size))))
+(define (list-count-pages n)
+  (inexact->exact (ceiling (/ n (list-page-size)))))
 
 (define (html-extension)
   (if (html-extension?) "html" ""))
@@ -111,7 +111,7 @@
 (define (next-list-page-path)
   (let ((tag (list-tag))
         (page-number (+ (list-page-number) 1)))
-    (and (<= page-number (list-total-documents))
+    (and (<= page-number (list-total-pages))
         (if tag
             (type-tag-list-path (list-type) (list-tag) page-number)
             (type-list-path (list-type) page-number)))))        
@@ -166,7 +166,9 @@
 
 (define list-page-number (make-parameter #f))
 
-(define list-total-documents (make-parameter #f))
+(define list-total-pages (make-parameter #f))
+
+(define list-length (make-parameter #f))
 
 (define (type)
   (if (current-document)
@@ -187,18 +189,16 @@
         `(a (@ (href ,(document-path page))) ,($ 'title page))
         "")))
 
-(define (prev-list-page-link)
+(define (prev-list-page-link #!optional (text "<"))
   (let ((path (prev-list-page-path)))
     (if path
-        `(a (@ (href ,path))
-            "<<" ,(- (list-page-number) 1))
+        `(a (@ (href ,path)) ,text)
         "")))
   
-(define (next-list-page-link)
+(define (next-list-page-link #!optional (text ">"))
   (let ((path (next-list-page-path)))
     (if path
-        `(a (@ (href ,path))
-            ">>" ,(->string (+ (list-page-number) 1)))
+        `(a (@ (href ,path)) ,text)
         "")))
 
 ;; Templating
@@ -220,40 +220,53 @@
 (define (content)
   (cond ((index?) (index))
         ((list-type) (document-list))
-        (else (p-content))))
+        (else (page-content))))
 
-(define (p-content) ; naming
-  (let ((type (document-type (current-document))))
-    ((or (get-template type 'content) (get-template '/ 'content) ))))
-
-(define (index) ; naming
+(define (index)
   (let ((type (document-type (current-document))))
     ((or (get-template type '_index) (get-template '/ '_index)))))
 
-(define (document-list) ; naming
+(define (page-content)
+  (let ((type (document-type (current-document))))
+    ((or (get-template type 'content) (get-template '/ 'content) ))))
+
+(define (document-list)
   (let ((type (list-type)))
     ((or (get-template type 'list) (get-template '/ 'list)))))
 
+;; TO DO
+;; Macro for calling `list-items` in templates with parameterization 
+;; of current-document
+
+;; (define-syntax map-documents
+;;   (syntax-rules ()
+;;     ((_ (var) documents body)
+;;      (map (lambda (var)
+;;             (parameterize ((current-document var))
+;;              body))
+;;           documents))))
+
 (define (list-items)
   (map (lambda (page)
-         (print (document-name page))
          (parameterize ((current-document page))
           (list-item)))
        (list-documents)))
 
 (define (list-items-by-type type)
   (let ((docs (documents type)))
-    (parameterize ((list-page-number 1)
-                   (list-total-documents (number-of-documents (length docs)))
+    (parameterize ((list-documents docs)
+                   (list-page-number 1)
+                   (list-total-pages (list-count-pages (length docs)))
                    (list-type type))
-   (map (lambda (page)
-          (parameterize ((current-document page))
-            (list-item)))
-        docs))))
+     (list-items))))
 
 (define (list-item)
   (let ((type (list-type)))
     ((or (get-template type 'list-item) (get-template '/ 'list-item)))))
+
+(define (list-title)
+  (let ((type (or (list-type) (document-type (current-document)))))
+    ((or (get-template type 'list-title) (get-template '/ 'list-title)))))
 
 (define (page-title)
   (let ((type (or (list-type) (document-type (current-document)))))
@@ -304,13 +317,18 @@
        (h2 ,(list-page-path)))
       (ul ,(list-items))
       ,(prev-list-page-link)
+      " " ,(list-page-number) / ,(list-total-pages) " "
       ,(next-list-page-link)
       )))
 
 (define-template '/ 'list-item
   (lambda ()
     `(li (a (@ (href ,(path)))
-            ,($ 'title)))))
+            ,(list-title)))))
+
+(define-template '/ 'list-title
+  (lambda ()
+    ($ 'title)))
 
 (define-template '/ 'page-title
   (lambda ()
@@ -380,7 +398,7 @@
           (parameterize ((current-document index-document)                      
                          (list-documents (documents type))
                          (list-page-number 1)
-                         (list-total-documents (number-of-documents (length (documents type))))
+                         (list-total-pages (list-count-pages (length (documents type))))
                          (list-type type)
                          (index? #t))
                         (base))))))))
@@ -429,7 +447,7 @@
                
 (define (render-list-page type out-directory p document-set total-documents)
   (parameterize ((list-page-number p)
-                 (list-total-documents (number-of-documents total-documents))
+                 (list-total-pages (list-count-pages total-documents))
                  (list-type type) 
                  (list-documents document-set))
    (with-output-to-file (make-pathname out-directory (type-list-filename type p))
