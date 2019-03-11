@@ -1,0 +1,7 @@
+((title . "Logbook D (1929)")
+ (first-line . "They went jumping")
+ (year . 1929)
+ (tags . ("Eros" "sailing"))
+ (date . "2019-03-21"))
+
+flying in the sea

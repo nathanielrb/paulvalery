@@ -1,0 +1,12 @@
+.columns {
+    width: 100%
+}
+.column {
+    float: left
+}
+.column.left {
+    width: 25%
+}
+.column.right {
+    width: 70%
+}

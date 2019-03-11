@@ -1,0 +1,9 @@
+((title . "Logbook A (1925)")
+ (first-line . "We went walking")
+ (year . 1925)
+ (tags . ("Eros" "sailing"))
+ (date . "2019-03-09"))
+
+A Page
+All about Jonny
+Jonny jim

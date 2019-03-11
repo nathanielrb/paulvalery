@@ -1,0 +1,7 @@
+((title . "Logbook E (1930)")
+ (first-line . "Hurray for houses and windows")
+ (year . 1930)
+ (tags . ("Eros" "flying"))
+ (date . "2019-03-30"))
+
+Flying fast

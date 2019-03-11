@@ -1,0 +1,7 @@
+((title . "Logbook C (1928)")
+ (first-line . "We went swimming")
+ (year . 1928)
+ (tags . ("Eros" "sailing"))
+ (date . "2019-03-20"))
+
+Third Page
