@@ -1,1 +1,4 @@
-((types . (/ posts)))
+((title . "The Notebooks of Paul Valery")
+ (base-path . "file:///home/type/valery/out/")
+ (types . (/ posts))
+)

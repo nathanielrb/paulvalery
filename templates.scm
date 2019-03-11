@@ -34,11 +34,11 @@
          (p "POSTS")
          (div (@ (class "column left"))
               (ul (@ (class "nav"))
-                  ,(if (prev-page)
-                       `(li "<< " ,(prev-page-link))
+                  ,(if (prev-document)
+                       `(li "<< " ,(prev-document-link))
                        "")
-                  ,(if (next-page) 
-                       `(li ">> " ,(next-page-link))
+                  ,(if (next-document) 
+                       `(li ">> " ,(next-document-link))
                        "")
                   (li (@ (class "facebook"))
                       "FB: "
@@ -56,7 +56,12 @@
 
 (define-template '/ '_index
  (lambda ()
-   (parameterize ((current-page (car (documents 'posts)))
-                  (prev-pages (cdr (documents 'posts))))
+   (parameterize ((current-document (car (documents 'posts)))
+                  (prev-documents (cdr (documents 'posts))))
      `(div (p "INDEX")
            ,($content)))))
+
+(define-template 'posts '_index
+ (lambda ()
+   `(div (p "INDEX")
+         (ul ,(list-items)))))

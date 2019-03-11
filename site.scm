@@ -8,7 +8,7 @@
 
 (define templates-file (make-parameter "templates.scm"))
 
-(define page-size (make-parameter 3))
+(define list-page-size (make-parameter 3))
 
 (define html-extension? (make-parameter #t))
 
@@ -16,28 +16,34 @@
 
 ;; Pages
 
-(define-record page type name vars content)
+(define-record document type name vars content)
 
 ;; File Paths
 
-(define (page-source-directory page)
+(define (document-source-directory page)
   (make-pathname (source-directory)
-                 (->string (page-type page))))
+                 (->string (document-type page))))
 
 (define (type-source-directory type)
   (let ((dir (if (eq? type '/) "." (->string type))))
     (make-pathname (source-directory) dir)))
 
-(define (page-out-directory page)
+(define (type-index-source type)
+  (make-pathname (type-source-directory type) "_index.site"))
+
+(define (type-index-out-path type)
+  (make-pathname (type-out-directory type) "index" "html"))
+
+(define (document-out-directory page)
   (make-pathname (out-directory) 
-                 (->string (page-type page))))
+                 (->string (document-type page))))
 
-(define (page-filename page)
-  (make-pathname "" (page-name page) "html"))
+(define (document-filename page)
+  (make-pathname "" (document-name page) "html"))
 
-(define (page-out-path page)
-  (make-pathname (page-out-directory page) 
-                 (page-filename page)))
+(define (document-out-path page)
+  (make-pathname (document-out-directory page) 
+                 (document-filename page)))
 
 (define (type-out-directory type)
   (let ((dir (if (eq? type '/) "." (->string type))))
@@ -62,27 +68,18 @@
 
 ;; URL Paths
 
-(define (number-of-pages n)
-  (ceiling (/ n (page-size))))
+(define (number-of-documents n)
+  (ceiling (/ n (list-page-size))))
 
 (define (html-extension)
   (if (html-extension?) "html" ""))
 
-;; Buggy ... need to keep better track of place in hierarchy
-(define (base-path)
-  (if (local-paths?)
-      (if (current-page)
-          (if (equal? (type) '/')
-              "."
-              (if (list-tag)
-                  "../../"
-                  "..")))
-    "/"))
+(define base-path (make-parameter "/"))
 
-(define (page-path page)
+(define (document-path page)
   (make-pathname (base-path)
-   (make-pathname (->string (page-type page)) 
-                  (page-name page) 
+   (make-pathname (->string (document-type page)) 
+                  (document-name page) 
                   (html-extension))))
 
 (define (type-path type)
@@ -114,7 +111,7 @@
 (define (next-list-page-path)
   (let ((tag (list-tag))
         (page-number (+ (list-page-number) 1)))
-    (and (<= page-number (list-total-pages))
+    (and (<= page-number (list-total-documents))
         (if tag
             (type-tag-list-path (list-type) (list-tag) page-number)
             (type-list-path (list-type) page-number)))))        
@@ -131,38 +128,37 @@
 
 (define index? (make-parameter #f))
 
-(define current-page (make-parameter #f))
+(define current-document (make-parameter #f))
 
 (define (path)
-  (cond ((index?) (index-path (list-type)))
-        ((current-page) (page-path (current-page)))
+  (cond ((current-document) (document-path (current-document)))
+        ((index?) (index-path (list-type)))
         (else
          (type-tag-list-path (list-type) (list-tag) (list-page-number))
          (type-list-path (list-type) (list-page-number)))))
 
-(define list-pages (make-parameter '()))
+(define list-documents (make-parameter '()))
 
-(define prev-pages (make-parameter #f))
+(define prev-documents (make-parameter #f))
 
-(define (prev-page)
-  (let ((pp (prev-pages)))
+(define (prev-document)
+  (let ((pp (prev-documents)))
     (and pp (not (null? pp))
          (car pp))))
 
-(define next-pages (make-parameter #f))
+(define next-documents (make-parameter #f))
 
-(define (next-page)
-  (let ((np (next-pages)))
+(define (next-document)
+  (let ((np (next-documents)))
     (and np (not (null? np))
          (car np))))
 
 (define ($content #!optional page)
-  (let ((page (or page (current-page))))
-    (page-content (current-page))))
+  (document-content (current-document)))
 
 (define ($ var #!optional page)
-  (let ((page (or page (current-page))))
-    (alist-ref var (page-vars page))))
+  (let ((page (or page (current-document))))
+    (alist-ref var (document-vars page))))
 
 (define list-type (make-parameter #f))
 
@@ -170,25 +166,25 @@
 
 (define list-page-number (make-parameter #f))
 
-(define list-total-pages (make-parameter #f))
+(define list-total-documents (make-parameter #f))
 
 (define (type)
-  (if (current-page)
-      (page-type (current-page))
+  (if (current-document)
+      (document-type (current-document))
       (list-type)))
 
 ;; Links
 
-(define (prev-page-link)
-  (let ((page (prev-page)))
+(define (prev-document-link)
+  (let ((page (prev-document)))
     (if page
-        `(a (@ (href ,(page-path page))) ,($ 'title page))
+        `(a (@ (href ,(document-path page))) ,($ 'title page))
         "")))
 
-(define (next-page-link)
-  (let ((page (next-page)))
+(define (next-document-link)
+  (let ((page (next-document)))
     (if page
-        `(a (@ (href ,(page-path page))) ,($ 'title page))
+        `(a (@ (href ,(document-path page))) ,($ 'title page))
         "")))
 
 (define (prev-list-page-link)
@@ -214,49 +210,54 @@
   (get level type))
 
 (define (base)
-  (let ((type (or (list-type) (page-type (current-page)))))
+  (let ((type (or (list-type) (document-type (current-document)))))
     ((or (get-template type 'base) (get-template '/ 'base)))))
 
 (define (page)
-  (let ((type (or (list-type) (page-type (current-page)))))
+  (let ((type (or (list-type) (document-type (current-document)))))
     ((or (get-template type 'page)  (get-template '/ 'page)))))
   
 (define (content)
   (cond ((index?) (index))
-        ((list-type) (page-list))
+        ((list-type) (document-list))
         (else (p-content))))
 
 (define (p-content) ; naming
-  (let ((type (page-type (current-page))))
+  (let ((type (document-type (current-document))))
     ((or (get-template type 'content) (get-template '/ 'content) ))))
 
 (define (index) ; naming
-  (let ((type (page-type (current-page))))
+  (let ((type (document-type (current-document))))
     ((or (get-template type '_index) (get-template '/ '_index)))))
 
-(define (page-list) ; naming
+(define (document-list) ; naming
   (let ((type (list-type)))
     ((or (get-template type 'list) (get-template '/ 'list)))))
 
 (define (list-items)
   (map (lambda (page)
-         (parameterize ((current-page page))
+         (print (document-name page))
+         (parameterize ((current-document page))
           (list-item)))
-       (list-pages)))
+       (list-documents)))
 
 (define (list-items-by-type type)
   (let ((docs (documents type)))
     (parameterize ((list-page-number 1)
-                   (list-total-pages (number-of-pages (length docs)))
+                   (list-total-documents (number-of-documents (length docs)))
                    (list-type type))
    (map (lambda (page)
-          (parameterize ((current-page page))
+          (parameterize ((current-document page))
             (list-item)))
         docs))))
 
 (define (list-item)
   (let ((type (list-type)))
     ((or (get-template type 'list-item) (get-template '/ 'list-item)))))
+
+(define (page-title)
+  (let ((type (or (list-type) (document-type (current-document)))))
+    ((or (get-template type 'page-title) (get-template '/ 'page-title)))))
 
 ;; Default templates
 
@@ -265,7 +266,7 @@
      `((xhtml-1.0-strict)
        (html
         (head
-         (title ,($ 'title))
+         (title ,(page-title))
          (link (@ (rel "stylesheet") (type "text/css")
                   (href "site.css"))))
         (body ,(page))))))
@@ -281,7 +282,7 @@
   (lambda ()
     `(div
       (div
-       (h1 ,($ 'title)))
+       (h1 ,(settings 'title)))
       ,($content) 
       (ul ,(list-items)))))
         
@@ -311,30 +312,38 @@
     `(li (a (@ (href ,(path)))
             ,($ 'title)))))
 
+(define-template '/ 'page-title
+  (lambda ()
+    (conc
+     (let ((title ($ 'title)))
+       (if title
+           (conc title " | ")
+           ""))
+     (settings 'title))))
 
 ;; File loading
 
-(define (load-page type path)
+(define (load-document type path)
   (with-input-from-file path
     (lambda ()
       (let-values (((_ name ext) (decompose-pathname path)))
-        (make-page type name (read) (read-string))))))
+        (make-document type name (read) (read-string))))))
 
 ;; Needs real date parsing and handling
 (define (date>? a b)
-  (let ((date-a (alist-ref 'date (page-vars a)))
-        (date-b (alist-ref 'date (page-vars b))))
+  (let ((date-a (alist-ref 'date (document-vars a)))
+        (date-b (alist-ref 'date (document-vars b))))
     (and date-a date-b
          (string>? date-a date-b))))
 
-(define page-sorter
+(define document-sorter
   (make-parameter date>?))
 
 (define (load-files type)
-  (sort (map (lambda (path) (load-page type path))
+  (sort (map (lambda (path) (load-document type path))
              (glob (make-pathname (type-source-directory type)
                                   "*" "nb")))
-        (page-sorter)))
+        (document-sorter)))
 
 ;; Load
 
@@ -347,13 +356,13 @@
           (create-directory dir))
 
   (do ((pages pages (cdr pages))
-       (rev-pages '() (cons (car pages) rev-pages)))
+       (rev-documents '() (cons (car pages) rev-documents)))
       ((null? pages))
     (let ((page (car pages)))
-    (parameterize ((current-page page)
-                   (prev-pages (cdr pages))
-                   (next-pages rev-pages))
-        (with-output-to-file (page-out-path page)
+    (parameterize ((current-document page)
+                   (prev-documents (cdr pages))
+                   (next-documents rev-documents))
+        (with-output-to-file (document-out-path page)
           (lambda ()
             (print
              (serialize-sxml 
@@ -361,15 +370,17 @@
   
 
 (define (render-index type)
-  (let ((index-page (load-page '_index (make-pathname (type-source-directory type) "_index.site"))))
-    (with-output-to-file (make-pathname (type-out-directory type) "index" "html")
+  (let* ((index-src (type-index-source type))
+         (index-document (if (file-exists? index-src) (load-document '_index index-src)
+                         (make-document type (->string type) `((title . ,type)) #f))))
+    (with-output-to-file (type-index-out-path type)
       (lambda ()
         (print 
          (serialize-sxml
-          (parameterize ((current-page index-page)                      
-                         (list-pages (documents type))
+          (parameterize ((current-document index-document)                      
+                         (list-documents (documents type))
                          (list-page-number 1)
-                         (list-total-pages (number-of-pages (length (documents type))))
+                         (list-total-documents (number-of-documents (length (documents type))))
                          (list-type type)
                          (index? #t))
                         (base))))))))
@@ -384,7 +395,7 @@
           pages))
 
 (define (render-lists type )
-  (parameterize ((current-page (make-page type (->string type) `((title . ,type)) "none")))
+  (parameterize ((current-document (make-document type (->string type) `((title . ,type)) "none")))
    (paginate-list type (documents type) (type-list-out-directory type))))
   
 (define (render-tags-lists type)
@@ -394,9 +405,9 @@
         ((null? tags))
       (let* ((tag (car tags))
              (file-dir (type-tag-list-out-directory type tag))
-             (page-set '())
+             (document-set '())
              (pages (filter-tag tag pages)))
-        (parameterize ((current-page (make-page #f tag `((title . ,tag)) "none"))
+        (parameterize ((current-document (make-document #f tag `((title . ,tag)) "none"))
                        (list-tag tag))
           (paginate-list type pages file-dir))))))
 
@@ -404,24 +415,23 @@
   (when (not (directory-exists? file-dir))
         (create-directory file-dir))
   
-  (let ((total-pages (length pages)))
+  (let ((total-documents (length pages)))
     (let rec ((n 0) (p 1)
               (pages pages)
-              (page-set '()))
-
+              (document-set '()))
       (cond ((null? pages) 
-             (render-list-page type file-dir p (reverse page-set) total-pages))
-            ((= n (page-size))
-             (render-list-page type file-dir p (reverse page-set) total-pages)
+             (render-list-page type file-dir p (reverse document-set) total-documents))
+            ((= n (list-page-size))
+             (render-list-page type file-dir p (reverse document-set) total-documents)
              (rec 0 (+ p 1) pages '()))
             (else (rec (+ n 1) p (cdr pages) 
-                       (cons (car pages) page-set)))))))
+                       (cons (car pages) document-set)))))))
                
-(define (render-list-page type out-directory p page-set total-pages)
+(define (render-list-page type out-directory p document-set total-documents)
   (parameterize ((list-page-number p)
-                 (list-total-pages (number-of-pages total-pages))
+                 (list-total-documents (number-of-documents total-documents))
                  (list-type type) 
-                 (list-pages page-set))
+                 (list-documents document-set))
    (with-output-to-file (make-pathname out-directory (type-list-filename type p))
      (lambda ()
        (print
@@ -433,13 +443,18 @@
 (define (documents type)
   (get type '_documents))
 
-(define settings (with-input-from-file (settings-path) read))
+(define *settings* (with-input-from-file (settings-path) read))
 
-(define types (alist-ref 'types settings))
+(define (settings var)
+  (alist-ref var *settings*))
+    
+(when (settings 'base-path)
+      (base-path (settings 'base-path)))
+
+(define types (settings 'types))
 
 (map (lambda (type)
        (save-documents type (load-files type)))
-  
      types)
 
 (map (lambda (type)
@@ -449,5 +464,4 @@
        (render-tags-lists type))
      types)
 
-;; (render-index 'posts)
 (quit)
