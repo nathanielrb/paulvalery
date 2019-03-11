@@ -1,3 +1,9 @@
+;; TODO
+;;
+;; - macro for mapping list items with parameterization
+;; - command line options for init, new pages
+;; - page archetypes, views
+
 (use sxml-serializer posix srfi-1)
 
 (define source-directory (make-parameter "src"))
@@ -238,7 +244,7 @@
   (let ((type (list-type)))
     ((or (get-template type 'list) (get-template '/ 'list)))))
 
-;; TO DO
+;; TODO
 ;; Macro for calling `list-items` in templates with parameterization 
 ;; of current-document
 
