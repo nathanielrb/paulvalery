@@ -10,7 +10,7 @@
 
 (define settings-path (make-parameter "site.nb"))
 
-(define out-directory (make-parameter "out"))
+(define out-directory (make-parameter "docs"))
 
 (define templates-file (make-parameter "templates.scm"))
 
