@@ -45,7 +45,7 @@
                         "Nathaniel Rudavsky-Brody"))
 
                   (p (@ (class "sources"))
-                     (a (@ (href "/sources.html"))
+                     (a (@ (href ,(make-path "sources.html")))
                         "Sources and Acknowledements"))))
                
           (div (@ (class "column right"))

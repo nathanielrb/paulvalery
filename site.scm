@@ -67,7 +67,7 @@
                  (type-list-filename p)))
 
 (define (type-tag-list-out-directory type tag)
-  (make-pathname (type-out-directory type) (conc "_" tag)))
+  (make-pathname (type-out-directory type) (conc "" tag)))
 
 (define (type-tag-list-out-path type tag p)
   (make-pathname (type-tag-list-out-directory type)
@@ -108,7 +108,7 @@
 
 (define (type-tag-list-path type tag #!optional page-number)
   (make-pathname (type-path type)
-    (make-pathname (conc "_" tag)
+    (make-pathname (conc "-" tag)
                    (if page-number (->string page-number) "1")
                    (html-extension))))
 
