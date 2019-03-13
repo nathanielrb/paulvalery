@@ -92,7 +92,7 @@
  (lambda ()
    (parameterize ((current-document (car (documents 'posts)))
                   (prev-documents (cdr (documents 'posts))))
-     `(div ,($content)))))
+     `(div ,(page-content)))))
 
 (define-template 'posts '_index
  (lambda ()

@@ -3,6 +3,7 @@
 ;; - macro for mapping list items with parameterization
 ;; - command line options for init, new pages
 ;; - page archetypes, views
+;; - dev and local options, for css, links
 
 (use sxml-serializer posix srfi-1 lowdown)
 
