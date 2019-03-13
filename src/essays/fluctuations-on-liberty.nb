@@ -1,0 +1,4 @@
+((title . "Fluctuations on Liberty")
+ (date . "2019-03-09"))
+
+A great essay on liberty
