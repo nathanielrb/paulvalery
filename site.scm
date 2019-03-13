@@ -83,6 +83,9 @@
 
 (define base-path (make-parameter "/"))
 
+(define (make-path path)
+  (make-pathname (base-path) path))
+
 (define (document-path page)
   (make-pathname (base-path)
    (make-pathname (->string (document-type page)) 

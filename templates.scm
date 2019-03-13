@@ -16,13 +16,13 @@
 
                (ul (@ (class "menu"))
                    (li (@ (class "menu-item"))
-                       (a (@ (href "/about.html"))
+                       (a (@ (href ,(make-path "about.html")))
                           "About the Notebooks"))
                    (li (@ (class "menu-item"))
-                       (a (@ (href "/posts/index.html"))
+                       (a (@ (href ,(make-path "posts/index.html")))
                           "Browse by Category"))
                    (li (@ (class "menu-item"))
-                       (a (@ (href "/essays/index.html"))
+                       (a (@ (href ,(make-path "essays/index.html")))
                           "Three Essays")))
 
                (div (@ (class "book"))
