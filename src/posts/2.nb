@@ -1,7 +1,12 @@
-((title . "Logbook B (1926)")
- (first-line . "Some boats went walking")
+((title . "E [VI, 491] (1917)")
+ (first-line . "The Old Woman")
  (year . 1926)
- (tags . ("Eros" "jumping"))
+ (tags . ("Eros" "Old people"))
  (date . "2019-03-19"))
 
-Another Page
+The Old Woman
+
+I am very old, and live in an intermediate world, nearly in balance with every instant and every circumstance. Though I touch you, I am very far. The same moment means quite a different thing for you and for me. My memory is a fully completed house. This magic house may disappear at a moment's notice, as soon as nothing more can be added. All possible projects have either been brought to completion or abandoned. I have only one new act still to perform.
+
+I am difficult regarding the light, noise, the taste of food. Everything that happens now is already known to me, or is unknowable.
+

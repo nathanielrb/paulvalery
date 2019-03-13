@@ -1,7 +1,7 @@
-((title . "Logbook E (1930)")
- (first-line . "Hurray for houses and windows")
+((title . "M [VII, 732], (1920-1920)")
+ (first-line . "Dawn. This isn't dawn...")
  (year . 1930)
  (tags . ("Eros" "flying"))
  (date . "2019-03-30"))
 
-Flying fast
+Dawn. This isn't dawn – But the setting of the moon, worn-away pearl, melting ice – and a dying glow that is little by little replaced by the day being born. I love this moment, so pure, final, beginning. A mixture of calm, renunciation, religion, negation. Abandonment. The night is respectfully closed. It is folded and tucked away. Now is the lying down, the sinking into sleep, of the loneliest self. Sleep is going to rest. Dreams cede to the dream of the real. Agitation and movement are about to be born. Muscles, machines will invade the land of being. The real still seems to hesitate. The Zaimph[^zaimph] unfurls and at the blast of a whistle will be raised to the tops of poles, of trees, of roofs – to fill the sky.
