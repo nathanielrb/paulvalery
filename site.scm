@@ -4,7 +4,7 @@
 ;; - command line options for init, new pages
 ;; - page archetypes, views
 
-(use sxml-serializer posix srfi-1)
+(use sxml-serializer posix srfi-1 lowdown)
 
 (define source-directory (make-parameter "src"))
 
@@ -160,7 +160,9 @@
          (car np))))
 
 (define ($content #!optional page)
-  (document-content (current-document)))
+  (markdown-sxml->html-sxml
+   (markdown->sxml
+    (document-content (current-document)))))
 
 (define ($ var #!optional page)
   (let ((page (or page (current-document))))
