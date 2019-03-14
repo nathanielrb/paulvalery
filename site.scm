@@ -1,8 +1,7 @@
 ;; TODO
 ;;
 ;; - macro for mapping list items with parameterization
-;; - page archetypes, views
-;; - dev and local options, for css, links
+;; - init
 
 (use sxml-serializer posix srfi-1 lowdown)
 
@@ -140,8 +139,11 @@
   (make-pathname (type-list-out-directory type)
                  (type-list-filename p)))
 
+(define (tag-pathname tag)
+  (conc "" tag)) ; "_"
+
 (define (type-tag-list-out-directory type tag)
-  (make-pathname (type-out-directory type) (conc "_" tag)))
+  (make-pathname (type-out-directory type) (tag-pathname tag)))
 
 (define (type-tag-list-out-path type tag p)
   (make-pathname (type-tag-list-out-directory type)
@@ -180,7 +182,7 @@
 
 (define (type-tag-list-path type tag #!optional page-number)
   (make-pathname (type-path type)
-    (make-pathname (conc "_" tag)
+    (make-pathname (tag-pathname tag)
                    (if page-number (->string page-number) "1")
                    (html-extension?))))
 
@@ -453,7 +455,10 @@
 ;; Load
 
 (load (templates-file))
-               
+  
+(when (not (directory-exists? (out-directory)))
+      (create-directory (out-directory)))  
+             
 (define (render-pages type)
   (let ((dir (type-out-directory type))
         (pages (documents type)))
@@ -467,6 +472,7 @@
     (parameterize ((current-document page)
                    (prev-documents (cdr pages))
                    (next-documents rev-documents))
+        (format #t "Writing: ~A~%" (document-out-path page))
         (with-output-to-file (document-out-path page)
           (lambda ()
             (print
@@ -478,6 +484,7 @@
   (let* ((index-src (type-index-source type))
          (index-document (if (file-exists? index-src) (load-document '_index index-src)
                          (make-document type (->string type) `((title . ,type)) #f))))
+    (format #t "Writing: ~A~%"  (type-index-out-path type))
     (with-output-to-file (type-index-out-path type)
       (lambda ()
         (print 
@@ -537,6 +544,7 @@
                  (list-total-pages (list-count-pages total-documents))
                  (list-type type) 
                  (list-documents document-set))
+   (format #t "Writing: ~A~%"  (make-pathname out-directory (type-list-filename type p)))
    (with-output-to-file (make-pathname out-directory (type-list-filename type p))
      (lambda ()
        (print
@@ -558,5 +566,7 @@
        (render-lists type)
        (render-tags-lists type))
      types)
+
+(print "Site generated.")
 
 (quit)
