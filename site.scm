@@ -6,8 +6,26 @@
 
 (use sxml-serializer posix srfi-1 lowdown)
 
+(define *command* 
+  (and (pair? (command-line-arguments))
+       (car (command-line-arguments))))
+
+;; Init
+
+(when (equal? *command* "init")
+    ;; init
+    (quit)
+)
+
+;; Settings
+
+(define *args*     
+  (cond ((equal? *command* "new")
+         (cdddr (command-line-arguments)))
+        (else (command-line-arguments))))
+
 (define *arguments*
-  (let rec ((lst (command-line-arguments))
+  (let rec ((lst *args*)
             (groups '()))
     (if (null? lst) (reverse groups)
         (let-values (((group rest) (split-at lst 2)))
@@ -53,6 +71,29 @@
 (make-setting list-page-size 3)
 
 (make-setting html-extension #t)
+
+(define types (settings 'types))
+
+;; Command line - New page
+
+(when (equal? *command* "new")
+      (let* ((type (cadr (command-line-arguments)))
+             (name (caddr (command-line-arguments)))
+             (root? (equal? type "/"))
+             (src-path (make-pathname "types" (if root? "_root" type) "nb"))
+             (out-dir  (make-pathname (source-directory) (if root? "" type)))
+             (out-path (make-pathname out-dir name "nb")))
+        (when (not (member (string->symbol type) types))
+              (print (format "Error: Document type '~A` not defined in ~A." type (settings-path)))
+              (quit))
+        (when (not (directory-exists? out-dir))
+              (create-directory out-dir))
+        (when (file-exists? out-path)
+              (print "Error: File already exists.")
+              (quit))
+        (file-copy src-path out-path)
+        (format #t "New document created: ./~A~%" out-path)
+        (quit)))
 
 ;; Pages
 
@@ -506,8 +547,6 @@
 
 (define (documents type)
   (get type '_documents))
-
-(define types (settings 'types))
 
 (map (lambda (type)
        (save-documents type (load-files type)))
