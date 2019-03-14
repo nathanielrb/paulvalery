@@ -1,5 +1,6 @@
 ;; TODO
 ;;
+;; - generate HTTACCESS file
 ;; - macro for mapping list items with parameterization
 ;; - init
 
