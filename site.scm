@@ -468,7 +468,8 @@
        (let-values (((_ name extension) (decompose-pathname path)))
          (let ((new-path (make-pathname (make-pathname (out-directory) "static")
                                         name extension)))
-           (delete-file new-path)
+           (when (file-exists? new-path)
+                 (delete-file new-path))
            (file-copy path new-path))))
      (glob (make-pathname (static-directory) "*")))
              
