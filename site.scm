@@ -65,6 +65,8 @@
   
 (make-setting out-directory "docs")
 
+(make-setting static-directory "static")
+
 (make-setting templates-file "templates.scm")
 
 (make-setting list-page-size 3)
@@ -458,6 +460,17 @@
   
 (when (not (directory-exists? (out-directory)))
       (create-directory (out-directory)))  
+  
+(when (not (directory-exists? (make-pathname (out-directory) "static")))
+      (create-directory (make-pathname (out-directory) "static")))
+
+(map (lambda (path)
+       (let-values (((_ name extension) (decompose-pathname path)))
+         (let ((new-path (make-pathname (make-pathname (out-directory) "static")
+                                        name extension)))
+           (delete-file new-path)
+           (file-copy path new-path))))
+     (glob (make-pathname (static-directory) "*")))
              
 (define (render-pages type)
   (let ((dir (type-out-directory type))
