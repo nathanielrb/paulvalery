@@ -7,19 +7,52 @@
 
 (use sxml-serializer posix srfi-1 lowdown)
 
-(define source-directory (make-parameter "src"))
+(define *arguments*
+  (let rec ((lst (command-line-arguments))
+            (groups '()))
+    (if (null? lst) (reverse groups)
+        (let-values (((group rest) (split-at lst 2)))
+          (rec rest
+               (cons (cons (string->symbol (substring (car group) 2))
+                           (cadr group))
+                     groups))))))
 
-(define settings-path (make-parameter "site.nb"))
+(define (argument x)
+  (let ((val (alist-ref x *arguments*)))
+    (case val
+      (("TRUE" "True" "true") #t)
+      (("FALSE" "False" "false") #f)
+      (else val))))
 
-(define out-directory (make-parameter "docs"))
+(define settings-path
+  (make-parameter (or (argument 'settings-path)
+                      "site.nb")))
 
-(define templates-file (make-parameter "templates.scm"))
+(define *settings* (with-input-from-file (settings-path) read))
 
-(define list-page-size (make-parameter 3))
+(define (settings var)
+  (alist-ref var *settings*))
 
-(define html-extension? (make-parameter #t))
+(define-syntax make-setting
+  (syntax-rules ()
+    ((_ name default)
+     (define name
+       (make-parameter 
+        (or (argument (quote name))
+            (settings (quote name))
+            default))))))
+  
+(make-setting source-directory "src")
 
-(define local-paths? (make-parameter #t))
+(make-setting base-path "/")
+  
+(make-setting out-directory "docs")
+
+(make-setting templates-file "templates.scm")
+
+(make-setting list-page-size 3)
+
+(make-setting html-extension #t)
 
 ;; Pages
 
@@ -78,10 +111,8 @@
 (define (list-count-pages n)
   (inexact->exact (ceiling (/ n (list-page-size)))))
 
-(define (html-extension)
-  (if (html-extension?) "html" ""))
-
-(define base-path (make-parameter "/"))
+(define (html-extension?)
+  (if (html-extension) "html" ""))
 
 (define (make-path path)
   (make-pathname (base-path) path))
@@ -90,7 +121,7 @@
   (make-pathname (base-path)
    (make-pathname (->string (document-type page)) 
                   (document-name page) 
-                  (html-extension))))
+                  (html-extension?))))
 
 (define (type-path type)
   (make-pathname (base-path) (->string type)))
@@ -98,19 +129,19 @@
 (define (index-path type)
   (make-pathname (type-path type) 
                  "index" 
-                 (html-extension)))
+                 (html-extension?)))
 
 (define (type-list-path type #!optional page-number)
   (make-pathname (type-path type)
    (make-pathname "_list"
                   (if page-number (->string page-number) "1")
-                  (html-extension))))
+                  (html-extension?))))
 
 (define (type-tag-list-path type tag #!optional page-number)
   (make-pathname (type-path type)
     (make-pathname (conc "_" tag)
                    (if page-number (->string page-number) "1")
-                   (html-extension))))
+                   (html-extension?))))
 
 (define (list-page-path)
   (let ((tag (list-tag)))
@@ -475,14 +506,6 @@
 
 (define (documents type)
   (get type '_documents))
-
-(define *settings* (with-input-from-file (settings-path) read))
-
-(define (settings var)
-  (alist-ref var *settings*))
-    
-(when (settings 'base-path)
-      (base-path (settings 'base-path)))
 
 (define types (settings 'types))
 
