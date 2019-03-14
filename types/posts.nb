@@ -1,0 +1,6 @@
+((title . "")
+ (first-line . "")
+ (year . 1917)
+ (tags . ())
+ (date . "2019-03-09"))
+
