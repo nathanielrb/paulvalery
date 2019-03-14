@@ -1,7 +1,6 @@
 ;; TODO
 ;;
 ;; - macro for mapping list items with parameterization
-;; - command line options for init, new pages
 ;; - page archetypes, views
 ;; - dev and local options, for css, links
 
@@ -25,8 +24,9 @@
       (else val))))
 
 (define settings-path
-  (make-parameter (or (argument 'settings-path)
-                      "site.nb")))
+  (make-parameter
+   (or (argument 'settings-path)
+       "site.nb")))
 
 (define *settings* (with-input-from-file (settings-path) read))
 
