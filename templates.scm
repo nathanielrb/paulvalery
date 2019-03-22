@@ -17,7 +17,7 @@
                (ul (@ (class "menu"))
                    (li (@ (class "menu-item"))
                        (a (@ (href ,(make-path "posts/index.html")))
-                          "From the Notebooks"))
+                          "The Notebooks"))
                    (li (@ (class "menu-item"))
                        (a (@ (href ,(make-path "essays/index.html")))
                           "Essays"))
