@@ -1,0 +1,159 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans;
+    background: #e6d5bb;
+}
+ul {
+    margin: 0;
+    padding: 0;
+}
+li {
+    list-style: none;
+}
+a {
+    text-decoration: none;
+     color: #222
+}
+.wrap {
+
+}
+.columns {
+    width: 100%
+}
+.column {
+    float: left;
+    height: 100%
+}
+.column > div, .column > h1, column > ul {
+    margin-left: 3rem;
+    padding: 0
+}
+.column.left {
+    width: 30%;
+    /* background: #bbb */
+}
+.column.right {
+    width: 70%;
+    position: relative;
+    padding-bottom: 4em
+    /* background: beige */
+}
+
+/* Menu */
+
+.column.left .site-title {
+    font-size: 1.5em;
+    margin-top: 4rem;
+    letter-spacing: 2px;
+}
+.column.left .site-title .title {
+    color: gray
+}
+.column.left .site-title .name {
+
+}
+ul.menu {
+    padding: 0;
+    margin: 5rem 0 0 3rem;
+    font-size: 1em;
+}
+ul.menu li {
+    list-style: none;
+        margin: 1em 0 1em 0;
+}
+ul.menu li .from-script {
+    font-family: serif;
+    font-style: italic;
+}
+.book {
+    margin-top: 6em
+}
+.book img {
+    width: 160px;
+}
+.book .forthcoming {
+    font-style: italic;
+    color: #222
+}
+.book .book-title {
+
+    font-weight: bold;
+    margin: 0
+}
+.book .book-subtitle {
+
+}
+.book .book-title a, .book .book-subtitle a {
+    color: #222
+}
+.copyright {
+    margin-top: 3rem;   
+}
+
+/* Lists */
+
+ul.list {
+
+}
+ul.list li {
+    margin: 1em 0;
+}
+
+/* Content */
+
+h2 {
+    font-family: sans-serif;
+    font-weight: normal;
+    font-size: 1.5rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 2em;
+}
+.column .content {
+    max-width: 90%;
+    width: 50%;
+    margin-left: 200px;
+    margin-top: 4rem;
+    font-size: 1.2em
+}
+.content p {
+    line-height: 2em;
+}
+.notebooks {
+    margin-top: 50%
+}
+.notebooks .entry {
+    font-size: 1.6em;
+    font-family: serif;
+    color: #222;
+}
+.attribution {
+    text-align: right;
+    font-weight: bold;
+    margin-top: 2rem
+}
+.notebooks .info {
+    text-align: right;
+}
+ul.nav {
+
+}
+ul.nav li {
+    display: inline-block;
+    font-weight: bold;
+    font-size: 2em
+}
+ul.nav li.right {
+}
+ul.tags {
+    display: inline-block;
+}
+ul.tags li {
+    display: inline-block;
+}
+.notices {
+    /* font-size: small; */
+    /* position: absolute; */
+    /* bottom: 0; */
+    margin-top: 6em;
+}
