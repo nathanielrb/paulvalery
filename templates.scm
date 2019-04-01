@@ -93,12 +93,13 @@
                   ,($ 'year) ")")
                ,(tag-links)
                (ul (@ (class "nav"))
-                   ,(if (next-document) 
-                        `(li  (@ (class "right")) ,(next-document-link "<"))
-                        "")
                    ,(if (prev-document)
-                        `(li (@ (class "left")) ,(prev-document-link ">"))
-                        ""))))))
+                        `(li (@ (class "left")) ,(prev-document-link "<"))
+                        "")
+                   ,(if (next-document) 
+                        `(li  (@ (class "right")) ,(next-document-link ">"))
+                        "")
+                   )))))
 
 (define-template 'posts 'list-title
   (lambda ()
