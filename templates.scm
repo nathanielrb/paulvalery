@@ -52,7 +52,7 @@
                          ;;       "Nathaniel Rudavsky-Brody") )
                          (p
                             (a (@ (href ,(make-path "sources")))
-                               "Sources and Acknowledements")))
+                               "Copyright")))
 
 
 
