@@ -1,23 +1,10 @@
-((title . "G [VI, 738ff] (1917)")
- (first-line . "Morning of the second day of autumn")
- (year . 1928)
- (tags . ("Eros" "sailing"))
- (date . "2019-03-20"))
+((title . "")
+ (first-line . "Yet another...")
+ (notebook . "Beta")
+ (code . (15 572))
+ (page . 1492)
+ (year . "1944")
+ (tags . ())
+ (date . "2019-03-10"))
 
-Morning of the second day of autumn
-
-Waking – singular impressions – The softness of sheets, the sensation of delicate freshness – And I feel in myself a finesse, an extreme penetration, amid the psychological and tragic beauty – My Alexandria, my aging intellectual paganism, touched by winter –
-
-Infinitely pure mixture of thought and images.
-
-The idea of incest in all its nobility, its tenderness and ferocity – a little cold – Music. The trembling of hands deeply moved at being joined at last, at finding each other, whose over-excited vibration resembles a low and deep note, as from a contralto, sung at the end of everything and at the beginning of tears –
-
-I get angry at these emotions. The intellect, never content, shrugs its strange shoulders and paces back and forth at the rear of the polished gallery, which does not exist and which overlooks the sea.
-
-Opening the window. The delicate sky.
-
-I play a tragedy *a parte* looking out in the street – where I look without seeing –
-
-I experience this opening of the day with all the weariness and impatience of my lucidity, which reads in these marvels a performance of autumn.
-
-
+Yet another perceptive quote.

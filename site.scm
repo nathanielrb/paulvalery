@@ -1,8 +1,10 @@
 ;; TODO
 ;;
+;; - all useful css classes
 ;; - generate HTTACCESS file
 ;; - macro for mapping list items with parameterization
 ;; - init
+;; - use sxml-transforms and SXML->HTML for special characters etc
 
 (use sxml-serializer posix srfi-1 lowdown)
 
@@ -161,7 +163,11 @@
   (if (html-extension) "html" ""))
 
 (define (make-path path)
-  (make-pathname (base-path) path))
+  (make-pathname (base-path) path (html-extension?)))
+
+(define (static-path path)
+  (make-pathname (base-path) 
+                 (make-pathname "static" path)))
 
 (define (document-path page)
   (make-pathname (base-path)
@@ -369,7 +375,7 @@
 
 (define-template '/ 'base
    (lambda ()
-     `((xhtml-1.0-strict)
+     `((meta (@ (charset "utf-8")))
        (html
         (head
          (title ,(page-title))
@@ -381,16 +387,17 @@
   (lambda ()
     `(div
       (div
-       (h1 ,($ 'title)))
+       (h2 ,($ 'title)))
       ,(content))))
 
 (define-template '/ '_index
   (lambda ()
     `(div
       (div
-       (h1 ,(settings 'title)))
+       (h2 ,(settings 'title)))
       ,($content) 
-      (ul ,(list-items)))))
+      (ul (@ (class "list"))
+          ,(list-items)))))
         
 (define-template '/ 'content
    (lambda ()
@@ -406,8 +413,9 @@
   (lambda ()
     `(div
       (div
-       (h1 ,($ 'title)))
-      (ul ,(list-items))
+       (h2 ,($ 'title)))
+      (ul (@ (class "list"))
+          ,(list-items))
       ,(prev-list-page-link)
       " " ,(list-page-number) / ,(list-total-pages) " "
       ,(next-list-page-link)
@@ -490,9 +498,8 @@
         (format #t "Writing: ~A~%" (document-out-path page))
         (with-output-to-file (document-out-path page)
           (lambda ()
-            (print
-             (serialize-sxml 
-              (base))))))))))
+            (print "<!DOCTYPE html>")
+            (print (serialize-sxml (base) method: 'html)))))))))
   
 
 (define (render-index type)
@@ -502,6 +509,7 @@
     (format #t "Writing: ~A~%"  (type-index-out-path type))
     (with-output-to-file (type-index-out-path type)
       (lambda ()
+        (print "<!DOCTYPE html>")
         (print 
          (serialize-sxml
           (parameterize ((current-document index-document)                      
@@ -510,7 +518,8 @@
                          (list-total-pages (list-count-pages (length (documents type))))
                          (list-type type)
                          (index? #t))
-                        (base))))))))
+                        (base))
+          method: 'html))))))
 
 (define (extract-tags pages)
   (delete-duplicates
@@ -562,8 +571,9 @@
    (format #t "Writing: ~A~%"  (make-pathname out-directory (type-list-filename type p)))
    (with-output-to-file (make-pathname out-directory (type-list-filename type p))
      (lambda ()
+       (print "<!DOCTYPE html>")
        (print
-        (serialize-sxml (base)))))  ))
+        (serialize-sxml (base) method: 'html))))  ))
 
 (define (save-documents type documents)
   (put! type '_documents documents))

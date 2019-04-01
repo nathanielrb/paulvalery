@@ -1,6 +1,7 @@
 ((title . "Sources and Acknowledgements")
  (date . "2019-03-09"))
 
-Judith Robinson
+Notebook excerpts taken from *Les Cahiers*, Gallimard, 1956, edited by Judith Robinson.
 
-Thanks to everyone
+Translations (C) 2019, <a href="http://nathanielrudavsky.com">Nathaniel Rudavsky-Brody</a>
+

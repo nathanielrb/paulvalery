@@ -1,6 +1,9 @@
 ((title . "")
- (first-line . "")
- (year . 1917)
+ (first-line . "...")
+ (notebook . "")
+ (code . (15 572))
+ (page . 1492)
+ (year . "")
  (tags . ())
  (date . "2019-03-09"))
 

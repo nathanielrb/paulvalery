@@ -1,11 +1,10 @@
-((title . "C [VI, 272], (1916)")
- (first-line . "We went walking")
- (year . 1917)
- (tags . ("Eros" "sailing"))
+((title . "..")
+ (first-line . "What ruined 'conservatives'...")
+ (notebook . "Untitled")
+ (code . (15 572))
+ (page . 1492)
+ (year . "1931-32")
+ (tags . ("History-Politics"))
  (date . "2019-03-09"))
 
-Tide. Twice in twenty-four hours you adore yourself, and twice disdain. I am all, I am nothing, follow and cause each other, and each is  only the other's simple and necessary alternative, without importance.
-
-Perhaps for any given feeling we can find a period of time that contains the opposite feeling for the same object. And were life long enough, everything in the end would be both desired and hated; every opinion would be considered both true and false.
-
-You like tobacco, music... That's only because you haven't lived long enough to have the opposite taste.
+What ruined 'conservatives' was the wrong choice of things to conserve.
