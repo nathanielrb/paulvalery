@@ -81,7 +81,8 @@ ul.menu li .from-script {
 .book .book-title {
     line-height: 2em;
     font-weight: bold;
-    margin: 0
+    margin: 0;
+    width: 300px;
 }
 .book .book-subtitle {
     font-weight: normal;
