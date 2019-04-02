@@ -60,7 +60,10 @@ ul.menu {
 }
 ul.menu li {
     list-style: none;
-        margin: 1em 0 1em 0;
+    margin: 1em 0 1em 0;
+}
+ul.menu li.menu-item {
+    margin-top: 4rem
 }
 ul.menu li .from-script {
     font-family: serif;
@@ -73,16 +76,15 @@ ul.menu li .from-script {
     width: 160px;
 }
 .book .forthcoming {
-    font-style: italic;
     color: #222
 }
 .book .book-title {
-
+    line-height: 2em;
     font-weight: bold;
     margin: 0
 }
 .book .book-subtitle {
-
+    font-weight: normal;
 }
 .book .book-title a, .book .book-subtitle a {
     color: #222

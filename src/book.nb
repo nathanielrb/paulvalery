@@ -1,8 +1,6 @@
 ((title . "The Idea of Perfection")
  (date . "2019-03-09"))
 
-*The Poems and Prose of Paul Valery*
-
 
 
 Forthcoming this Februrary from Farrar, Straus and Giroux, 

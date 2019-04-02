@@ -21,42 +21,43 @@
                           (span (@ (class "from-script"))
                                 "from the ")
                           "Notebooks"))
-
                    (li (@ (class "menu-item"))
-                       (a (@ (href ,(make-path "essays/liberty")))
-                          "Fluctuations on Liberty"))
-                   (li (@ (class "menu-item"))
-                       (a (@ (href ,(make-path "essays/dictatorship")))
-                          "The Idea of Dictatorship"))
-                   )
+                       (small "Essays")
+                       (ul
+                        (li (@ (class "sub-item"))
+                            (a (@ (href ,(make-path "essays/liberty")))
+                               "Fluctuations on Liberty"))
+                        (li (@ (class "sub-item"))
+                            (a (@ (href ,(make-path "essays/dictatorship")))
+                               "The Idea of Dictatorship")))
+                       )
 
-               (div (@ (class "book"))
-                    (p (@ (class "forthcoming"))
-                       "forthcoming from FSG:")
-                    (p (@ (class "book-title"))
+               (li (@ (class "menu-item book"))
+                   (ul
+                    (li (@ (class "label"))
+                       (small
+                        (a (@ (href ,(make-path "book")))
+                           "Poetry")))
+                    (li (@ (class "book-title"))
                        (a (@ (href ,(make-path "book")))
-                          "The Idea of Perfection"))
-                    (p (@ (class "book-subtitle"))
-                       (a (@ (href ,(make-path "book")))
-                          "The Poetry and Prose of Paul Valery"))
-                    ;; (p (@ (class "book-cover"))
-                    ;;    (a (@ (href ,(make-path "book.html")))
-                    ;;       (img (@ (src ,(static-path "/static/valery.jpg"))))))
+                          "The Idea of Perfection: "
+                          (span (@ (class "book-subtitle"))
+                                "The Poetry and Prose of Paul Valery")
+                          (span (@ (class "forthcoming"))
+                                " (FSG)")))))                      
 
-                    )
-
-                    (div (@ (class "notices"))
-                         ;; (p (@ (class "copyright"))
-                         ;;    "Translations by " (br)
-                         ;;    (a (@ (href "http://nathanielrudavsky.com"))
-                         ;;       "Nathaniel Rudavsky-Brody") )
-                         (p
+                    (li (@ (class "menu-item notices"))
+                        (ul
+                         (li
+                          (a (@ (href ,(make-path "about")))
+                             "About"))
+                         (li
                             (a (@ (href ,(make-path "sources")))
-                               "(c)")))
+                               "(c)"))))
 
 
 
-               )
+               ))
                
           (div (@ (class "column right"))
                (div (@ (class "content"))
