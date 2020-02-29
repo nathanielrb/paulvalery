@@ -1,0 +1,12 @@
+((title . "")
+ (first-line . "All wars for centuries have been luxury wars...")
+ (notebook . "(Untitled)")
+ (code . (24 439))
+ (page . 1519)
+ (year . "1941")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+All wars for centuries have been luxury wars, which is to say, wars whose generative idea was purely imaginary, formed by a few, and not by a real need of the majority, &ndash; and whose profits were only for a minority; those few not being all of the victorious people. The indispensable popular excitement was created by way of publicity, education, artificial agitation. And History &ndash; &ndash;
+
+It would be another chapter of history to be write, the history of the act of creating the will/fervor for war &ndash; with all the supporting documents.

@@ -12,8 +12,11 @@ li {
     list-style: none;
 }
 a {
-    text-decoration: none;
+    text-decoration: underline dotted;
      color: #222
+}
+.column.left a {
+    text-decoration: none;
 }
 .wrap {
 
@@ -123,7 +126,7 @@ h2 {
     line-height: 2em;
 }
 .notebooks {
-    margin-top: 50%
+    margin-top: 40%
 }
 .notebooks .entry {
     font-size: 1.6em;

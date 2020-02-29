@@ -35,9 +35,7 @@
                (li (@ (class "menu-item book"))
                    (ul
                     (li (@ (class "label"))
-                       (small
-                        (a (@ (href ,(make-path "book")))
-                           "Poetry")))
+                       (small "Poetry"))
                     (li (@ (class "book-title"))
                        (a (@ (href ,(make-path "book")))
                           "The Idea of Perfection: "
@@ -50,10 +48,15 @@
                         (ul
                          (li
                           (a (@ (href ,(make-path "about")))
-                             "About"))
+                             "About Paul Valery"))
+                         (li
+                            (a (@ (href "http://nathanielrb.org"))
+                               "NRB"))
+
                          (li
                             (a (@ (href ,(make-path "sources")))
-                               "(c)"))))
+                               "©"))
+                         ))
 
 
 

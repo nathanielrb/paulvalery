@@ -1,0 +1,12 @@
+((title . "")
+ (first-line . "Democracies tend to live a the expense of the past...")
+ (notebook . "[mu]")
+ (code . (11 346))
+ (page . 1472)
+ (year . "1926")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Democracies tend to live a the expense of the past and the future. Their nature is impatience. There are advantages to this.
+
+But what is a democracy? It's a state where the government is renewed at a rapid pace, and politics too &ndash; and feels renewable.

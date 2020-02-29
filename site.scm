@@ -5,6 +5,7 @@
 ;; - macro for mapping list items with parameterization
 ;; - init
 ;; - use sxml-transforms and SXML->HTML for special characters etc
+;; - on create new page, add current date
 
 (use sxml-serializer posix srfi-1 lowdown)
 
@@ -72,7 +73,7 @@
 
 (make-setting templates-file "templates.scm")
 
-(make-setting list-page-size 3)
+(make-setting list-page-size 10)
 
 (make-setting html-extension #t)
 
@@ -246,10 +247,13 @@
     (and np (not (null? np))
          (car np))))
 
-(define ($content #!optional page)
+(define (markdown str)
   (markdown-sxml->html-sxml
-   (markdown->sxml
-    (document-content (current-document)))))
+   (markdown->sxml str)))
+
+(define ($content #!optional page)
+  (markdown
+    (document-content (current-document))))
 
 (define ($ var #!optional page)
   (let ((page (or page (current-document))))

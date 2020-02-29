@@ -1,0 +1,10 @@
+((title . "")
+ (first-line . "Violence, war have as their goal...")
+ (notebook . "H")
+ (code . (6 869))
+ (page . 1460)
+ (year . "1918")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Violence, war have as their goal deciding in a short time and by the brusque dissipation of energy, difficulties that on the contrary demand the subtlest analysis and prudent trials. For a state of equilibrium without constraints much be reached.

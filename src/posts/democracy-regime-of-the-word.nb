@@ -1,0 +1,14 @@
+((title . "")
+ (first-line . "In democracy – regime of the word, or the effects of the word...")
+ (notebook . "G 12")
+ (code . (4 674))
+ (page . 1454)
+ (year . "1912")
+ (tags . ("History-Politics"))
+ (date . "2019-03-09"))
+
+In democracy &ndash; regime of the word, or the effects of the word &ndash; everything becomes "politics."
+
+And "politics" in democracy more or less signifies "dramatics." Everything is relative to the reactions of a public. The laws of the theater apply. Simplification, perpetual illusion, under pain of laughter and death. Everything for the effect. Everything in the moment. Clear roles. What is difficult to understand, forbidden. What is difficult to express does not exist. What requires long preparations, prolonged attention, a precise memory, indifference to circumstances and lighting, becomes impossible.
+
+An idle word kills a man of the first order.

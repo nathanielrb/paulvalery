@@ -1,0 +1,12 @@
+((title . "")
+ (first-line . "There's nowhere left in the world where man can flee...")
+ (notebook . "Rueil Paris-Dinard I")
+ (code . (23 402))
+ (page . 1506)
+ (year . "1940")
+ (tags . ("History-Politics"))
+ (date . "2019-03-09"))
+
+There's nowhere left in the world where man can flee the blind power of States. Inhumanity, that is to say, the disproportion and stupidity of those magnificent monsters which, conceived for the common good, crush everyone without knowing why.
+
+All the immense load weighs successively on each element of the [rim], and the wheel turns.

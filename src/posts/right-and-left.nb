@@ -1,0 +1,10 @@
+((title . "")
+ (first-line . "On the *right* by instinct; on the *left* by reason...")
+ (notebook . "(Untitled)")
+ (code . (17 261))
+ (page . 1494)
+ (year . "1934")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Ego &mdash; On the *right* by instinct; on the *left* by reason. On the *right* among leftists, on the *left* among rightists. With the one, the ideas repel me, with the other, the style.

@@ -1,0 +1,12 @@
+((title . "")
+ (first-line . "Politics was first the art of preventing people...")
+ (notebook . "E 10")
+ (code . (4 623))
+ (page . 1453)
+ (year . "1910")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Politics was first the art of preventing people from getting involved with what concerns them.
+
+In a later period, there was added the art of forcing people to decide on what they did not understand.

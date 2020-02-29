@@ -1,0 +1,12 @@
+((title . "")
+ (first-line . "The naive system of recruiting the elite...")
+ (notebook . "Dinard II")
+ (code . (23 510))
+ (page . 1510)
+ (year . "1940")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Elite &ndash; The naive system of recruiting the elite by means of exams, diplomas &ndash; and also by popular election &ndash; results (among other things) from the confusion between culture, value, authority, learned knowledge and *living knowledge* &ndash; and in general, the ancillary that is *knowledge* with the principle that is *man*.
+
+We seek and train "brilliant subjects" who are brilliant... for three years.

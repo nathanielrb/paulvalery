@@ -1,0 +1,10 @@
+((title . "")
+ (first-line . "Civilized man of huge cities returns to a primitive state...")
+ (notebook . "B 1910")
+ (code . (4 415))
+ (page . 1452)
+ (year . "1910")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Civilized man of huge cities returns to a primitive state &mdash; that is to say, isolated, because the social mechanism allows him to forget the need for community, and to lose the feeling of connection between individuals, that was once continuously revised by necessity. With every improvement of the social mechanism, acts, ways of feeling, aptitudes for communal life are rendered useless.

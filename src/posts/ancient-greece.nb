@@ -1,0 +1,10 @@
+((title . "")
+ (first-line . "Ancient Greece is the most beautiful invention...")
+ (notebook . "S")
+ (code . (8 680))
+ (page . 1465)
+ (year . "1922")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Ancient Greece is the most beautiful invention of modern times.

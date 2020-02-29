@@ -1,0 +1,12 @@
+((title . "")
+ (first-line . "Capitalism, Socialism are united...")
+ (notebook . "Gamma")
+ (code . (10 75))
+ (page . 1468)
+ (year . "1924")
+ (tags . ("History-Politics"))
+ (date . "2019-04-20"))
+
+Capitalism, Socialism are united against *quality*.
+
+Competition tends towards the best exchange rather than the best quality. Theory of indiscernibles.
